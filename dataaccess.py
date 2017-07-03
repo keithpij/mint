@@ -13,8 +13,9 @@ class MissingTransactionFile(Exception):
 
 
 class Transaction:
-
-    FIELD_COUNT = 0
+    '''
+    Transaction class
+    '''
 
     DATE_HEADER = 'date'
     DESCRIPTION_HEADER = 'description'
@@ -43,19 +44,21 @@ class Transaction:
 
 
 def set_indecies(header_list):
-    # The field count from the header line will help to correct scenarios
-    # where the user put a comma in the Account Name field.
-    global FIELD_COUNT
-    FIELD_COUNT = len(header_list)
+    '''
+    Determines the index into the transaction list for each field.
+    By not hard coding these values we are insulated from changes to the underlying export file.
+    '''
+    field_count = len(header_list)
 
-    # By not hard coding these value we are insulated from changes to the
-    # underlying export file.
-    for i in range(0, FIELD_COUNT):
+    for i in range(0, field_count):
         Transaction.index_dict[header_list[i].lower()] = i
 
 
 def load_transaction_file(file):
-
+    '''
+    Loads the transaction file specified in settings into memory.
+    This function does not load hidden transactions.
+    '''
     # Setup needed variables
     line_count = 0
     transactions = []
@@ -75,11 +78,8 @@ def load_transaction_file(file):
             set_indecies(line)
         else:
             transaction = Transaction(line)
-            # Do not add any transactions in the a 'Hide*' category.
-            if transaction.category.lower()[0:4] == 'hide':
-                print('Hidden transaction: ' + str(transaction.transaction_date) + ' ' +
-                      transaction.description)
-            else:
+            # Do not add any transactions in a 'hide*' category.
+            if transaction.category.lower()[0:4] != 'hide':
                 transactions.append(transaction)
 
     fhand.close()
@@ -125,7 +125,7 @@ def get_category_by_name(search_name, transactions):
 
 
 def get_category_totals(categories):
-    ''' Create a dictionary of totals for each category. '''
+    ''' Create a dictionary of totals by category. '''
     category_totals = dict()
     for category_name in categories.keys():
         total = 0

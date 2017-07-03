@@ -1,5 +1,5 @@
 ''' 
-Console for the Mint app.
+CLI interface for the Mint app.
 '''
 import sys
 import csv

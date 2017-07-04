@@ -17,6 +17,8 @@ rotated counter-clockwise by 90 degrees, and the frog slice starts on the
 positive y-axis.
 """
 import matplotlib.pyplot as plt
+import settings
+
 
 def category_pie_chart(categories):
     ''' Pie chart, where the slices will be ordered and plotted counter-clockwise.'''
@@ -25,14 +27,23 @@ def category_pie_chart(categories):
     labels = []
     sizes = []
     explode = []
+    other_total = 0
     for category_name in categories.keys():
-        labels.append(category_name)
         total = 0
         for transaction in categories[category_name]:
             total += transaction.amount
-        sizes.append(total)
-        explode.append(0)
+        
+        if total <= settings.OTHER_LIMIT:
+            other_total += total
+        else:
+            labels.append(category_name)
+            sizes.append(total)
+            explode.append(0)
 
+    labels.append('Other')
+    sizes.append(other_total)
+    explode.append(0)
+    
     fig1, ax1 = plt.subplots()
     ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.

@@ -39,7 +39,7 @@ def test_to_date_6():
     assert convert.to_date(test_value) == None
 
 
-def test_to_date_4():
+def test_to_date_7():
     test_value = '2/1/2017'
     with pytest.raises(convert.InvalidDateFormat):
         returned_value = convert.to_date(test_value, 'abcdefg')

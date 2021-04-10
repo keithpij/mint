@@ -7,7 +7,7 @@ import calendar
 import convert
 import charts
 import reports
-import transactions
+import data
 
 
 def print_menu():
@@ -25,6 +25,7 @@ def print_menu():
     print('lf - to load the transaction file.')
     print('pie - to see a pie chart of spending by category.')
     print('spending - to see spending for the current date range.')
+    print('tag [tag name] - to see spending by tag. If a tag name is passed then the details for that tag will be shown.')
     print('quit - to quit this program')
     print('\n')
 
@@ -35,7 +36,7 @@ def get_user_requests():
     the appropriate function.
     '''
 
-    transactions = transactions.Transactions()
+    transactions = data.Transactions()
     print(str(transactions.count) + ' transactions loaded.')
 
     # User request loop
@@ -64,6 +65,23 @@ def get_user_requests():
                     print('No transactions found for category: ' + search_name + '.')
                 else:
                     reports.print_transactions(search_name, category_transactions)
+            continue
+
+        if command[0:3] == 'tag':
+            params = command[3:].strip()
+            params_list = params.split(' ')
+            search_name = params_list[0]
+            debits = transactions.get_transactions_by_type('debit')
+
+            if len(search_name) == 0:
+                tags = transactions.get_tags(debits)
+                reports.print_category_totals(tags)
+            else:
+                tag_transactions = transactions.get_tag_by_name(search_name, debits)
+                if tag_transactions is None:
+                    print('No transactions found for tag: ' + search_name + '.')
+                else:
+                    reports.print_transactions(search_name, tag_transactions)
             continue
 
         if command == 'cp':

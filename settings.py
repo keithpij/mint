@@ -7,6 +7,7 @@ import inspect
 
 MAIN_DIRECTORY = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 DATA_FILE = os.path.join(MAIN_DIRECTORY, 'transactions.csv')
+#DATA_FILE = os.path.join(MAIN_DIRECTORY, 'chase.csv')
 OTHER_LIMIT = 300
 
 

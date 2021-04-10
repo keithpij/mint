@@ -5,14 +5,14 @@ import datetime
 import calendar
 import pytest
 import settings
-import dataaccess
+import data
 
 
 @pytest.fixture(scope='session')
 def transactions():
     ''' Fixture that will return a list of transactions.'''
     print('Calling the transaction fixture.')
-    trans = dataaccess.load_transaction_file(settings.DATA_FILE)
+    trans = data.Transactions()
     yield trans
     trans = None
 

@@ -1,7 +1,7 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-#source = /Users/keithpij/Documents/python-sandbox/mint
+source = /Users/keithpij/code/mint
 parallel = False
 omit = test_*, conftest.py, __init__.py
 

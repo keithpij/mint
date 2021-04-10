@@ -10,6 +10,8 @@ import calendar
 import settings
 
 
+TAGS = ['Keith', 'Eileen', 'Split', 'Lake House', 'Glen Rock House']
+
 class MissingTransactionFile(Exception):
     '''Custom exception to be thrown when the transaction file is missing.'''
     pass
@@ -21,19 +23,22 @@ class Transactions:
     Holds a list of collection objects as well as all the functions that process transaction objects.
     '''
 
-    def __init__(self):
+    def __init__(self, data_file = None):
         '''
         Loads the transaction file specified in settings into memory.
         This function does not load hidden transactions.
         '''
+        if data_file is None:
+            data_file = settings.DATA_FILE
+
         # Setup needed variables
         line_count = 0
         transactions = []
 
-        if not os.path.isfile(settings.DATA_FILE):
-            raise MissingTransactionFile('Missing transaction file: ' + settings.DATA_FILE)
+        if not os.path.isfile(data_file):
+            raise MissingTransactionFile('Missing transaction file: ' + data_file)
 
-        fhand = open(settings.DATA_FILE, 'r')
+        fhand = open(data_file, 'r')
         reader = csv.reader(fhand)
 
         # Read through each line of the file.
@@ -58,7 +63,7 @@ class Transactions:
         fhand.close()
 
         self.count = line_count - 1
-        self.transactions = transactions
+        self.transaction_list = transactions
 
         # Get the current year and month.
         now = datetime.datetime.now()
@@ -83,7 +88,7 @@ class Transactions:
         The transaction total is not used anywhere but I set it in the dictionary values anyway.
         '''
         accounts = dict()
-        for transaction in self.transactions:
+        for transaction in self.transaction_list:
             # Do not add any 'Hide' categories.
             if transaction.account_name in accounts:
                 accounts[transaction.account_name] += transaction.amount
@@ -97,7 +102,7 @@ class Transactions:
         Creates a dictionary of daily spending for the current data range.
         '''
         days = dict()
-        for transaction in self.transactions:
+        for transaction in self.transaction_list:
             if (transaction.transaction_date >= self.start_date) and (transaction.transaction_date <= self.end_date):
                 if transaction.transaction_type.lower() == 'debit':
                     if transaction.transaction_date in days:
@@ -139,6 +144,37 @@ class Transactions:
         return None
 
 
+    def get_tags(self, transactions_param):
+        '''
+        Creates a dictionary of tags based on the list of transactions passed in.
+        Tag names are the keys.
+        Total transaction amount are the values.
+        '''
+        tags_dict = dict()
+        for transaction in transactions_param:
+            for tag in TAGS:
+                if tag in transaction.tags:
+                    if tag in tags_dict:
+                        tags_dict[tag].append(transaction)
+                    else:
+                        tags_dict[tag] = []
+                        tags_dict[tag].append(transaction)
+
+        return tags_dict
+
+
+    def get_tag_by_name(self, search_name, transactions_param):
+        '''
+        Returns the first tag that matches search_name which is treated as a regular expression.
+        '''
+        tags = self.get_tags(transactions_param)
+        for tag_name in tags:
+            if re.search(search_name.lower(), tag_name.lower()):
+                return tags[tag_name]
+        # If we get here then nothing was found.
+        return None
+
+
     def get_transactions_by_type(self, tran_type, start_date = None, end_date = None):
         '''
         Returns a list of transactions for a transaction type which is either
@@ -151,7 +187,7 @@ class Transactions:
             end_date = self.end_date
 
         matches = []
-        for transaction in self.transactions:
+        for transaction in self.transaction_list:
             if (transaction.transaction_date >= start_date) and (transaction.transaction_date <= end_date):
                 if transaction.transaction_type.lower() == tran_type.lower():
                     matches.append(transaction)
@@ -181,7 +217,7 @@ class Transaction:
     TRANSACTION_TYPE_HEADER = 'transaction type'
     CATEGORY_HEADER = 'category'
     ACCOUNT_NAME_HEADER = 'account name'
-    LABELS_HEADER = 'labels'
+    TAGS_HEADER = 'labels'
     NOTES_HEADER = 'notes'
 
     index_dict = dict()
@@ -196,5 +232,5 @@ class Transaction:
         self.transaction_type = transaction_details[d[Transaction.TRANSACTION_TYPE_HEADER]]
         self.category = transaction_details[d[Transaction.CATEGORY_HEADER]]
         self.account_name = transaction_details[d[Transaction.ACCOUNT_NAME_HEADER]]
-        self.labels = transaction_details[d[Transaction.LABELS_HEADER]]
+        self.tags = transaction_details[d[Transaction.TAGS_HEADER]]
         self.notes = transaction_details[d[Transaction.NOTES_HEADER]]
